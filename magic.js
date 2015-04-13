@@ -4,7 +4,7 @@
 // @description         ***Magic***
 // @include             https://*.passthepopcorn.me/bprate.php*
 // @grant               GM_xmlhttpRequest
-// @version             1.1
+// @version             1.2
 // @author              Fermis
 // ==/UserScript==
  
@@ -373,7 +373,7 @@ var callback = function(page){
                 var seeds = Math.max(1.0, rawSeeds);
                 var Q = b / Math.pow(seeds, c); // intermediate calculation
                 // Seedtime in days
-                var t = Math.exp( (accurateBpPerHour/size - a) / Q ) - 1.0;
+                var t = Math.exp( (accurateBpPerHour/(size*goldenMultiplier) - a) / Q ) - 1.0;
                 var seedTimeInDays = numbers((t).toFixed(1));        
  
                 // Calculate average BP/year divided by size (g)
