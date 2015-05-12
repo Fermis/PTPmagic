@@ -4,8 +4,8 @@
 // @description         ***Magic***
 // @include             https://*.passthepopcorn.me/bprate.php*
 // @grant               GM_xmlhttpRequest
-// @downloadURL         https://raw.githubusercontent.com/Fermis/PTPmagic/master/magic.js
-// @version             1.2
+// @downloadURL         https://raw.githubusercontent.com/Fermis/PTPmagic/dev/magic.js
+// @version             1.3
 // @author              Fermis
 // ==/UserScript==
  
@@ -13,14 +13,24 @@
 //
 // 2015 09/04/2015
 // Bug fix. Script would crash if the user only had one BP page.
+//
+// 2015 11/05/2015
+// re-worked the code to make it cleaner and so a future update will be easier to implement.
  
 // parts of this script were taken from coj's script (http://pastebin.com/xYFnCVJa)
  
+/******************* Config *******************/ 
+var serverUrl = "";
+
+/***************** End Config *****************/
+
 var data = [];
 var current = 1;
 var last = 0;
 var order = "asc";
 var prop = "AvgBpPerYearPerGiBNum";
+
+
  
 // Constants in the BP/hour formula
 var a = 0.25;
@@ -117,6 +127,15 @@ function editHead(){
     a.addEventListener("click", function(){ reSort('AvgBpPerYearPerGiBNum', data); });
     th.appendChild(a);
     head.appendChild(th);
+
+
+    var th = document.createElement("th");
+    var a = document.createElement("a");
+    a.href = "javascript:void(0)";
+    a.appendChild(document.createTextNode("Delete"));
+
+    th.appendChild(a);
+    head.appendChild(th);
 }
  
 function editFooter(){
@@ -143,7 +162,7 @@ function editPage(){
  
         td.appendChild(content[i].nameRaw);
         tr.appendChild(td);
- 
+
         var td = document.createElement('td');
         td.appendChild(content[i].gp);
         tr.appendChild(td);
@@ -187,12 +206,80 @@ function editPage(){
         td.style.color = content[i].color;
         td.appendChild(text);
         tr.appendChild(td);
- 
+
+
+        var td = document.createElement('td');
+        var a = document.createElement('a');
+        a.href = 'javascript:void(0)';
+        a.id = 'deleteTorrent';
+        a.setAttribute("data-url", "https://tls.passthepopcorn.me/" + content[i].href);
+        a.addEventListener("click", function(){ nameClick(this) });
+        var text = document.createTextNode("Delete");
+        a.appendChild(text);
+        td.appendChild(a);
+        tr.appendChild(td);
+
         new_body.appendChild(tr);
     }
     old_body.parentNode.replaceChild(new_body, old_body);
 }
- 
+
+function nameClick(el){
+    console.log("click");
+    var torUrl = el.getAttribute("data-url");
+    getDlLink(torUrl);
+    return false;
+}
+
+function getDlLink(url){
+    var type = "dlLink";
+    loadPage(url, type);
+}
+
+
+function getDlLinkCallback(page, tid){
+    console.log(page);
+    console.log(tid);
+    var id = "#group_torrent_header_" + tid;
+    var dlLink = "https://tls.passthepopcorn.me/" + $($(page).find(id + " .basic-movie-list__torrent__action a")[0]).attr('href');
+    deleteTorrent(dlLink);
+}
+
+function deleteTorrent(tUrl){
+    jQuery.ajax({
+        type: 'POST',
+        url: serverUrl,
+        crossDomain: true,
+        async : true,
+        headers : { "Authorization" : "BasicCustom" },
+        contentType: "application/text; charset=utf-8",
+        data: '{"tUrl":"' + tUrl + '"}',
+        dataType: 'jsonp',
+        jsonp: false,
+        jsonpCallback: function(){return 'serverCallback';},
+    });
+}
+
+function serverCallback(data){
+    if (!data){
+        // error
+        alert("There was an error communicating with the server, please try again.");
+    }else{
+        console.log('test');
+        console.log(data);
+        return true;
+    }
+}
+
+function addJquery(callback){
+    var script = document.createElement('script');
+    script.src = 'https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js';
+    script.type = 'text/javascript';
+    document.getElementsByTagName('head')[0].appendChild(script);
+    callback;
+}
+
+// get url parameter
 function gup( name, url ) {
   if (!url) url = location.href
   name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
@@ -201,16 +288,13 @@ function gup( name, url ) {
   var results = regex.exec( url );
   return results == null ? null : results[1];
 }
-function loadPages(href){
-    var url = "https://tls.passthepopcorn.me/bprate.php?page=" + current + "&order_by=bp&order_way=asc";
-    var page = loadPage(url);
-}
- 
-function cb(){
+
+function loadPages(){
     if (current < last){
         current++;
         var url = "https://tls.passthepopcorn.me/bprate.php?page=" + current + "&order_by=bp&order_way=asc";
-        var page = loadPage(url);
+        var type = "rowBuilder";
+        var page = loadPage(url, type);
     }
     else{
         if (order == "asc"){
@@ -219,7 +303,6 @@ function cb(){
             data = sortResults("AvgBpPerYearPerGiBNum", false, data);
         }
         // final callback
-       
         editHead();
         var testEl = document.getElementsByClassName('pagination');
         if (testEl.length > 0){
@@ -229,27 +312,35 @@ function cb(){
         fixSort();
     }
 }
- 
-function loadPage(href){
+
+function loadPage(href, type, extra){
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.open("GET", href, true);
-    xmlhttp.onreadystatechange = receiveResponse;
+    // xmlhttp.onreadystatechange = receiveResponse;
+    xmlhttp.onreadystatechange = function(){
+        if (this.readyState == 4){
+            // xhr.readyState == 4, so we've received the complete server response
+            if (this.status == 200){
+                // xhr.status == 200, so the response is good
+                var page = this.responseText;
+                // toDomEl(response, callback);
+                switch(type) {
+                    case "rowBuilder":
+                        toDomEl(page, buildRow, {});
+                        break;
+                    case "dlLink":
+                        var torrentId = gup('torrentid', href);
+                        toDomEl(page, getDlLinkCallback, torrentId);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    };
     xmlhttp.send();
 }
-function receiveResponse(e)
-{
-    if (this.readyState == 4)
-    {
-        // xhr.readyState == 4, so we've received the complete server response
-        if (this.status == 200)
-        {
-            // xhr.status == 200, so the response is good
-            var response = this.responseText;
-            toDomEl(response, callback);
-        }
-    }
-}
- 
+
 function getLength(json){
         var ct = 0;
         for (key in json){
@@ -258,10 +349,10 @@ function getLength(json){
         return ct;
 }
  
-function toDomEl(html, callback){
+function toDomEl(html, callback, extra){
         var e = document.createElement('div');
         e.innerHTML = html;
-        callback(e);
+        callback(e, extra);
         return true;
 }
  
@@ -289,12 +380,12 @@ function colourize(rate) {
     return 'hsl('+hue+', '+sat+'%, '+light+'%)';
 }
  
-var callback = function(page){
+var buildRow = function(page, extra){
         el = page.getElementsByClassName('table')[1].children[1].children;
         length = el.length;
         for (var i = 0; i < el.length; i++){
                 var name = el[i].children[0].children[0].innerText;
-                var href = el[i].children[0].children[0].attributes.href;
+                var href = el[i].children[0].children[0].getAttribute("href");
                 var nameRaw = el[i].children[0];
                 var gp = el[i].children[1];
                 var sizeRaw = el[i].children[2];
@@ -412,7 +503,7 @@ var callback = function(page){
  
                 data[lastPlace+1] = temp;
         }
-        cb();
+        loadPages();
 }
  
 function getAll(odr){
@@ -458,9 +549,8 @@ function getAll(odr){
     }else{
         last = 1;
     }
-   
-    var url = "https://tls.passthepopcorn.me/bprate.php?page=" + current + "&order_by=bp&order_way=asc";
-    var page = loadPages(url);
+
+    loadPages();
 }
  
 function displayAsc(property){
@@ -472,5 +562,5 @@ function displayDesc(property){
     data = sortResults(property, true, data);
     editPage();
 }
- 
-getAll("asc");
+
+addJquery(getAll("asc"));
