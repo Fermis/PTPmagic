@@ -18,7 +18,7 @@ TODO<br>
 <br><br>
 Known bugs:<br>
 - Only works in https<br>
--~~Days seeding isn't properly sorted~~ <br>
+- ~~Days seeding isn't properly sorted~~ <br>
 <br>
 Description:<br>
 <br>
