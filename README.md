@@ -23,5 +23,5 @@ Known bugs:<br>
 
 Description:<br>
 <br>
-This script is for use on a (certain site which will not be named) and calculates the usefulness of torrents based on size and points generated<br>
-It will load all the torrents from all pages, and all categories are sortable without reloading the page.<br>
+  This script is for use on a (certain site which will not be named) and calculates the usefulness of torrents based on size   and points generated<br>
+  It will load all the torrents from all pages, and all categories are sortable without reloading the page.<br>
