@@ -16,7 +16,7 @@ TODO<br>
 -when the user only has a single page edit the page rather than sending a http request for it<br>
 -learn how to better format this readme.
 <br><br>
-Known bugs:<br>
+Known ~~bugs~~ features:<br>
 - Only works in https<br>
 - ~~Days seeding isn't properly sorted~~ <br>
 <br>
