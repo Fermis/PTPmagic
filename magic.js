@@ -4,7 +4,7 @@
 // @description         ***Magic***
 // @include             https://*.passthepopcorn.me/bprate.php*
 // @grant               GM_xmlhttpRequest
-// @downloadURL         https://raw.githubusercontent.com/Fermis/PTPmagic/dev/magic.js
+// @downloadURL         https://raw.githubusercontent.com/Fermis/PTPmagic/master/magic.js
 // @version             1.3
 // @author              Fermis
 // ==/UserScript==
