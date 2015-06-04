@@ -16,7 +16,10 @@
 //
 // 2015 11/05/2015
 // re-worked the code to make it cleaner and so a future update will be easier to implement.
- 
+// 
+// 2015 04/06/2015
+// Fixed an issue where some torrents wouldn't load, also removed the delete button until functionality is complete
+//
 // parts of this script were taken from coj's script (http://pastebin.com/xYFnCVJa)
  
 /******************* Config *******************/ 
@@ -25,7 +28,7 @@ var serverUrl = "";
 /***************** End Config *****************/
 
 var data = [];
-var current = 1;
+var current = 0;
 var last = 0;
 var order = "asc";
 var prop = "AvgBpPerYearPerGiBNum";
@@ -128,12 +131,12 @@ function editHead(){
     th.appendChild(a);
     head.appendChild(th);
 
-
+/*
     var th = document.createElement("th");
     var a = document.createElement("a");
     a.href = "javascript:void(0)";
     a.appendChild(document.createTextNode("Delete"));
-
+*/
     th.appendChild(a);
     head.appendChild(th);
 }
@@ -207,7 +210,7 @@ function editPage(){
         td.appendChild(text);
         tr.appendChild(td);
 
-
+        /*
         var td = document.createElement('td');
         var a = document.createElement('a');
         a.href = 'javascript:void(0)';
@@ -218,6 +221,8 @@ function editPage(){
         a.appendChild(text);
         td.appendChild(a);
         tr.appendChild(td);
+        */
+
 
         new_body.appendChild(tr);
     }
