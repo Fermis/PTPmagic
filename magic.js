@@ -5,7 +5,7 @@
 // @include             https://*.passthepopcorn.me/bprate.php*
 // @grant               GM_xmlhttpRequest
 // @downloadURL         https://raw.githubusercontent.com/Fermis/PTPmagic/master/magic.js
-// @version             1.3
+// @version             1.3.1
 // @author              Fermis
 // ==/UserScript==
  
@@ -541,15 +541,20 @@ function getAll(odr){
     old_body.parentNode.replaceChild(outerDiv, old_body);
  
     order = odr;
+    
     var testEl = document.getElementsByClassName('pagination')[0];
-    var linkBar = testEl.children;
- 
-    if (typeof linkBar !== "undefined"){
-        if (linkBar.length > 0){
-            var linkLength = linkBar.length;
-            var lastPage = linkBar[linkLength-1].attributes.href.nodeValue;
-            lastPage = gup("page", lastPage);
-            last = lastPage;
+    if (typeof testEl !== "undefined"){
+        var linkBar = testEl.children;
+     
+        if (typeof linkBar !== "undefined"){
+            if (linkBar.length > 0){
+                var linkLength = linkBar.length;
+                var lastPage = linkBar[linkLength-1].attributes.href.nodeValue;
+                lastPage = gup("page", lastPage);
+                last = lastPage;
+            }
+        }else{
+            last = 1;
         }
     }else{
         last = 1;
