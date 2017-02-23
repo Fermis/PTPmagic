@@ -7,7 +7,7 @@
 // @include             http://*.passthepopcorn.me/bprate.php*
 // @include             http://passthepopcorn.me/bprate.php*
 // @grant               GM_xmlhttpRequest
-// @downloadURL         https://raw.githubusercontent.com/Fermis/PTPmagic/master/magic.js
+// @downloadURL         https://raw.githubusercontent.com/Fermis/PTPmagic/development/magic.js
 // @version             2.0.0
 // @author              Fermis
 // ==/UserScript==
@@ -21,6 +21,7 @@
 // parts of this script were taken from coj's script (http://pastebin.com/xYFnCVJa)
 
 var magic = (function(){
+	'use strict';
 	var defaults = {
 		order: 'asc',
 		bpTableId: 'fermis-magic-table',
@@ -41,12 +42,57 @@ var magic = (function(){
 		var that = this;
 		
 		that.settings = that.mergeObjects(defaults, options || {});
-
+		
 		// should probably improve this as it's ugly
 		that.importScript('https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js', function(){
 			that.importStyle('//cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css', function(){
 				that.importScript('//cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js', function(){
 					that.importScript('//cdn.jsdelivr.net/bluebird/3.4.7/bluebird.min.js', function(){
+						jQuery.extend(jQuery.fn.dataTableExt.oSort, {
+						    "size-string-pre": function(size){
+						    	// Apply factors by coj
+								var splitSize = size.split(" ");
+								splitSize[0] = splitSize[0].trim();
+								splitSize[1] = splitSize[1].trim()
+								if (splitSize[1] == "KiB") {
+									size = parseFloat(splitSize[0]) / 1000000;
+								} else if (splitSize[1] == "MiB") {
+									size = parseFloat(splitSize[0]) / 1000;
+								} else if (splitSize[1] == "GiB") {
+									size = parseFloat(splitSize[0]);
+								} else if (splitSize[1] == "TiB") {
+									size = parseFloat(splitSize[0]) * 1000;
+								} else if (splitSize[1] == "PiB") {
+									size = parseFloat(splitSize[0]) * 1000000;
+								} else {
+									size = parseFloat(splitSize[0]);
+								}
+								return size;
+						        // return a.match(/data-size="(.*?)"/)[1].toLowerCase();
+						    },
+						 
+						    "size-string-asc": function(a,b){
+						        return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+						    },
+						 
+						    "size-string-desc": function(a,b){
+						        return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+						    }
+						});
+						jQuery.extend(jQuery.fn.dataTableExt.oSort, {
+							"days-string-pre": function ( a ) {
+								var match = a.match(/data-days="(.*?)"/)[1].toLowerCase();
+								return match;
+							},
+
+							"days-string-asc": function( a, b ) {
+								return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+							},
+
+							"days-string-desc": function(a,b) {
+								return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+							}
+						});
 						that.init();
 					});				
 				});
@@ -56,6 +102,22 @@ var magic = (function(){
 
 	magic.prototype.init = function(){
 		var that = this;
+		$([
+			'<style type="text/css">',
+				'.even {',
+					'background-color: #4d4d4d !important;',
+				'}',
+				'.dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing, .dataTables_wrapper .dataTables_paginate {',
+				    'color: #ffffff !important;',
+				'}',
+				'.dataTables_wrapper .dataTables_paginate .paginate_button.disabled, .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover, .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:active {',
+				    'color: #fff !important;',
+				'}',
+				'.dataTables_wrapper .dataTables_paginate .paginate_button {',
+				    'color: #8a8a8a !important;',
+				'}',
+			'</style>'
+		].join('')).appendTo('head');
 		return new Promise(function(resolve, reject){
 			// css loader from http://projects.lukehaas.me/css-loaders/
 			var cssText = ".loader {font-size: 90px; text-indent: -9999em; overflow: hidden; width: 1em; height: 1em; border-radius: 50%; margin: 0.8em auto; position: relative; -webkit-transform: translateZ(0); -ms-transform: translateZ(0); transform: translateZ(0); -webkit-animation: load6 1.7s infinite ease; animation: load6 1.7s infinite ease; } @-webkit-keyframes load6 {0% {-webkit-transform: rotate(0deg); transform: rotate(0deg); box-shadow: 0 -0.83em 0 -0.4em #ffffff, 0 -0.83em 0 -0.42em #ffffff, 0 -0.83em 0 -0.44em #ffffff, 0 -0.83em 0 -0.46em #ffffff, 0 -0.83em 0 -0.477em #ffffff; } 5%, 95% {box-shadow: 0 -0.83em 0 -0.4em #ffffff, 0 -0.83em 0 -0.42em #ffffff, 0 -0.83em 0 -0.44em #ffffff, 0 -0.83em 0 -0.46em #ffffff, 0 -0.83em 0 -0.477em #ffffff; } 10%, 59% {box-shadow: 0 -0.83em 0 -0.4em #ffffff, -0.087em -0.825em 0 -0.42em #ffffff, -0.173em -0.812em 0 -0.44em #ffffff, -0.256em -0.789em 0 -0.46em #ffffff, -0.297em -0.775em 0 -0.477em #ffffff; } 20% {box-shadow: 0 -0.83em 0 -0.4em #ffffff, -0.338em -0.758em 0 -0.42em #ffffff, -0.555em -0.617em 0 -0.44em #ffffff, -0.671em -0.488em 0 -0.46em #ffffff, -0.749em -0.34em 0 -0.477em #ffffff; } 38% {box-shadow: 0 -0.83em 0 -0.4em #ffffff, -0.377em -0.74em 0 -0.42em #ffffff, -0.645em -0.522em 0 -0.44em #ffffff, -0.775em -0.297em 0 -0.46em #ffffff, -0.82em -0.09em 0 -0.477em #ffffff; } 100% {-webkit-transform: rotate(360deg); transform: rotate(360deg); box-shadow: 0 -0.83em 0 -0.4em #ffffff, 0 -0.83em 0 -0.42em #ffffff, 0 -0.83em 0 -0.44em #ffffff, 0 -0.83em 0 -0.46em #ffffff, 0 -0.83em 0 -0.477em #ffffff; } } @keyframes load6 {0% {-webkit-transform: rotate(0deg); transform: rotate(0deg); box-shadow: 0 -0.83em 0 -0.4em #ffffff, 0 -0.83em 0 -0.42em #ffffff, 0 -0.83em 0 -0.44em #ffffff, 0 -0.83em 0 -0.46em #ffffff, 0 -0.83em 0 -0.477em #ffffff; } 5%, 95% {box-shadow: 0 -0.83em 0 -0.4em #ffffff, 0 -0.83em 0 -0.42em #ffffff, 0 -0.83em 0 -0.44em #ffffff, 0 -0.83em 0 -0.46em #ffffff, 0 -0.83em 0 -0.477em #ffffff; } 10%, 59% {box-shadow: 0 -0.83em 0 -0.4em #ffffff, -0.087em -0.825em 0 -0.42em #ffffff, -0.173em -0.812em 0 -0.44em #ffffff, -0.256em -0.789em 0 -0.46em #ffffff, -0.297em -0.775em 0 -0.477em #ffffff; } 20% {box-shadow: 0 -0.83em 0 -0.4em #ffffff, -0.338em -0.758em 0 -0.42em #ffffff, -0.555em -0.617em 0 -0.44em #ffffff, -0.671em -0.488em 0 -0.46em #ffffff, -0.749em -0.34em 0 -0.477em #ffffff; } 38% {box-shadow: 0 -0.83em 0 -0.4em #ffffff, -0.377em -0.74em 0 -0.42em #ffffff, -0.645em -0.522em 0 -0.44em #ffffff, -0.775em -0.297em 0 -0.46em #ffffff, -0.82em -0.09em 0 -0.477em #ffffff; } 100% {-webkit-transform: rotate(360deg); transform: rotate(360deg); box-shadow: 0 -0.83em 0 -0.4em #ffffff, 0 -0.83em 0 -0.42em #ffffff, 0 -0.83em 0 -0.44em #ffffff, 0 -0.83em 0 -0.46em #ffffff, 0 -0.83em 0 -0.477em #ffffff; } }";
@@ -83,28 +145,32 @@ var magic = (function(){
 			outerDiv.appendChild(div);
 			old_body.parentNode.replaceChild(outerDiv, old_body);
 
-			order = that.settings.order;
+			var order = that.settings.order;
 			
 			var lastPage = that.getLastPage();
-			console.log('lastPage: ' + lastPage);
 			var pages = [];
 			for(var i = 1; i < lastPage+1; i++){
-				console.log(i);
 				var baseUrl = window.location.origin + window.location.pathname;
         		var url = baseUrl + "?page=" + i + "&order_by=bp&order_way=asc";
 				pages.push(that.loadPage(url));
 			}
 			
 			return Promise.all(pages).then(function(p){
-				data = [];
-				for(i in p){
-					for(j in p[i]){
+				var data = [];
+				for(var i in p){
+					for(var j in p[i]){
 						data.push(p[i][j]);
 					}
 				}
 				that.addNewTable(data);
 
-				$('#'+that.settings.bpTableId).DataTable();
+				
+				$('#'+that.settings.bpTableId).DataTable({
+					columnDefs: [
+						{ type: 'size-string', targets: 2 },
+						{ type: 'days-string', targets: 4 }
+					]
+				});
 				
 				resolve();
 			});
@@ -142,6 +208,7 @@ var magic = (function(){
 	magic.prototype.getLastPage = function(){
 		var that = this;
 		var testEl = document.getElementsByClassName('pagination')[0];
+		var last = 0;
 		if (typeof testEl !== "undefined"){
 			var linkBar = testEl.children;
 
@@ -196,44 +263,51 @@ var magic = (function(){
 			var tr = document.createElement('tr');
 			var td = document.createElement('td');
 
-			td.appendChild(content[i].nameRaw);
+			var a = document.createElement('a');
+			a.setAttribute('href', content[i].href);
+			a.appendChild(document.createTextNode(content[i].nameRaw));
+			td.appendChild(a);
 			tr.appendChild(td);
 
 			var td = document.createElement('td');
-			td.appendChild(content[i].gp);
+			td.appendChild(document.createTextNode(content[i].gp));
 			tr.appendChild(td);
+			// tr.appendChild(td);
+
+			var td = document.createElement('td');
+			td.appendChild(document.createTextNode(content[i].sizeRaw));
+			td.setAttribute('data-size', content[i].size);
 			tr.appendChild(td);
 
 			var td = document.createElement('td');
-			td.appendChild(content[i].sizeRaw);
+			td.appendChild(document.createTextNode(content[i].ul));
 			tr.appendChild(td);
 
 			var td = document.createElement('td');
-			td.appendChild(content[i].ul);
+			var span = document.createElement('span');
+			span.setAttribute('data-days', content[i].seedTimeInDays);
+			span.appendChild(document.createTextNode(content[i].time));
+			td.appendChild(span);
 			tr.appendChild(td);
 
 			var td = document.createElement('td');
-			td.appendChild(content[i].time);
+			td.appendChild(document.createTextNode(content[i].BPhr));
 			tr.appendChild(td);
 
 			var td = document.createElement('td');
-			td.appendChild(content[i].BPhr);
+			td.appendChild(document.createTextNode(content[i].BPday));
 			tr.appendChild(td);
 
 			var td = document.createElement('td');
-			td.appendChild(content[i].BPday);
+			td.appendChild(document.createTextNode(content[i].BPweek));
 			tr.appendChild(td);
 
 			var td = document.createElement('td');
-			td.appendChild(content[i].BPweek);
+			td.appendChild(document.createTextNode(content[i].BPmonth));
 			tr.appendChild(td);
 
 			var td = document.createElement('td');
-			td.appendChild(content[i].BPmonth);
-			tr.appendChild(td);
-
-			var td = document.createElement('td');
-			td.appendChild(content[i].BPyear);
+			td.appendChild(document.createTextNode(content[i].BPyear));
 			tr.appendChild(td);
 
 			var ratio = content[i].AvgBpPerYearPerGiB;
@@ -253,22 +327,22 @@ var magic = (function(){
 
 	magic.prototype.buildRow = function(page){
 		var that = this;
-		data = [];
-		el = page.getElementsByClassName('table')[1].children[1].children;
-        length = el.length;
+		var data = [];
+		var el = page.getElementsByClassName('table')[1].children[1].children;
+        
         for (var i = 0; i < el.length; i++){
             var name = el[i].children[0].children[0].innerText;
             var href = el[i].children[0].children[0].getAttribute("href");
-            var nameRaw = el[i].children[0];
-            var gp = el[i].children[1];
-            var sizeRaw = el[i].children[2];
-            var ul = el[i].children[3];
-            var time = el[i].children[4];
-            var BPhr = el[i].children[5];
-            var BPday = el[i].children[6];
-            var BPweek = el[i].children[7];
-            var BPmonth = el[i].children[8];
-            var BPyear = el[i].children[9];
+            var nameRaw = el[i].children[0].innerText;
+            var gp = el[i].children[1].innerText;
+            var sizeRaw = el[i].children[2].innerText;
+            var ul = el[i].children[3].innerText;
+            var time = el[i].children[4].innerText;
+            var BPhr = el[i].children[5].innerText;
+            var BPday = el[i].children[6].innerText;
+            var BPweek = el[i].children[7].innerText;
+            var BPmonth = el[i].children[8].innerText;
+            var BPyear = el[i].children[9].innerText;
             var size = el[i].children[2].innerHTML;
             var pointPerYr = el[i].children[9].innerHTML;
             var pointPerMonth = el[i].children[8].innerHTML;
@@ -296,17 +370,16 @@ var magic = (function(){
 
             // temp is the JSON object to store the data relating to each row
             var temp = {};
-
-            if (gp.children[0]){
+            var goldenMultiplier = 1.0;
+            if (gp.trim() != ''){
                 temp["gpValue"] = 1;
-                var goldenMultiplier = that.settings.BPHr.constGoldenMultiplier;
+                goldenMultiplier = that.settings.BPHr.constGoldenMultiplier;
             }else{
                 temp["gpValue"] = 0;
-                var goldenMultiplier = 1.0;
             }
 
             pointPerYr = pointPerYr.replace(",","").trim();
-            pointperYr = parseFloat(pointPerYr);
+            pointPerYr = parseFloat(pointPerYr);
 
             pointPerMonth = pointPerMonth.replace(",","").trim();
             pointPerMonth = parseFloat(pointPerMonth);
@@ -323,7 +396,7 @@ var magic = (function(){
             var ratio =  pointPerYr / size;
 
             /* Calculate average BP using BH39's formula */
-            var avgBpPerHour = pointperYr / 8765.81; // average hours per year
+            var avgBpPerHour = pointPerYr / 8765.81; // average hours per year
             // If avgBpPerHour is too close to pointPerHr, use avgBpPerHour instead to ensure precision
             if (avgBpPerHour / pointPerHr > (0.995 - 0.05/pointPerHr)) {
                 pointPerHr = avgBpPerHour;
@@ -332,50 +405,57 @@ var magic = (function(){
             var fractionOfDaySeeding = Math.round((avgBpPerHour / pointPerHr) * 24) / 24.0;
             var effectivePeriod = fractionOfDaySeeding * that.settings.BPHr.period;
             var accurateBpPerHour = avgBpPerHour / fractionOfDaySeeding;
-            console.log('goldenMultiplier: ',goldenMultiplier);
 
             // Seeds
-            var rawSeeds = parseFloat(ul.innerHTML.trim().replace(',', ''));
+            var rawSeeds = parseFloat(ul.trim().replace(',', ''));
             var seeds = Math.max(1.0, rawSeeds);
+
             var Q = that.settings.BPHr.b / Math.pow(seeds, that.settings.BPHr.c); // intermediate calculation
-            console.log('Q: ', Q);
+
             // Seedtime in days
-            var t = Math.exp( (accurateBpPerHour/(size*goldenMultiplier) - that.settings.BPHr.a) / Q ) - 1.0;
-            console.log('t: ', t);
-            console.log('(t).toFixed(1): ', (t).toFixed(1));
-            var seedTimeInDays = that.numbers((t).toFixed(1));        
+            // bp/hr = size * ( 0.25 + ( 0.6 * ln(1+seedtime) / (seeds^0.6) ) )
+            // accurateBpPerHour = (size*goldenMultiplier) * ( a + ( b * ln(1+seedtime) / (Q^0.6) ) )
+            // accurateBpPerHour / (size*goldenMultiplier) = a + ( b * ln(1+seedtime) / (Q^0.6) )
+            // (accurateBpPerHour / (size*goldenMultiplier)) - a = b * ln(1+seedtime) / (Q^0.6)
+            // (((accurateBpPerHour / (size*goldenMultiplier)) - a) / b) * (Q^0.6) =ln(1+seedtime)
+            // Math.exp(((((accurateBpPerHour / (size*goldenMultiplier)) - a) / b) * (Q^0.6)) =1+seedtime
+           	// Math.exp(((((accurateBpPerHour / (size*goldenMultiplier)) - a) / b) * (Q^c)) -1 = seedtime
+            
+            // var t = Math.exp( (accurateBpPerHour/(size*goldenMultiplier) - that.settings.BPHr.a) / Q ) - 1.0;
+            var t = Math.exp(((((accurateBpPerHour / (size*goldenMultiplier)) - that.settings.BPHr.a) / that.settings.BPHr.b) * (Math.pow(rawSeeds,that.settings.BPHr.c)))) - 1;
+            var seedTimeInDays = that.numbers((t).toFixed(1));
 
             // Calculate average BP/year divided by size (g)
             var AvgBpPerYearPerGiB = (24.0 * ( that.settings.BPHr.a*effectivePeriod + Q * ((t + 1.0 + effectivePeriod)*(Math.log(t + 1.0 + effectivePeriod)) - (t + 1.0)*(Math.log(t + 1.0)) - effectivePeriod) ) * goldenMultiplier) / that.settings.BPHr.constYears;
             var color = that.colourize(AvgBpPerYearPerGiB);
-            console.log('(AvgBpPerYearPerGiB).toFixed(1): ', (AvgBpPerYearPerGiB).toFixed(1));
+
             AvgBpPerYearPerGiB = that.numbers((AvgBpPerYearPerGiB).toFixed(1)) + ((rawSeeds < 0.99) ? " <b>?</b>" : "");
             var AvgBpPerYearPerGiBNum = parseFloat(AvgBpPerYearPerGiB.replace(",", ""));
            
-            temp["pointPerYr"] = parseFloat(pointPerYr);
-            temp["pointPerMonth"] = pointPerMonth;
-            temp["pointPerWeek"] = pointPerWeek;
-            temp["pointPerDay"] = pointPerDay;
-            temp["pointPerHr"] = pointPerHr;
-            temp["seedTimeInDays"] = parseFloat(seedTimeInDays);
-            temp["AvgBpPerYearPerGiB"] = AvgBpPerYearPerGiB;
-            temp["AvgBpPerYearPerGiBNum"] = AvgBpPerYearPerGiBNum;
-            temp["color"] = color;
-            temp["nameRaw"] = nameRaw;
-            temp["gp"] = gp;
-            temp["seeds"] = seeds;
-            temp["sizeRaw"] = sizeRaw;
-            temp["size"] = size;
-            temp["ul"] = ul;
-            temp["time"] = time;
-            temp["BPhr"] = BPhr;
-            temp["BPday"] = BPday;
-            temp["BPweek"] = BPweek;
-            temp["BPmonth"] = BPmonth;
-            temp["BPyear"] = BPyear;
-            temp["ratio"] = ratio;
-            temp["name"] = name;
-            temp["href"] = href;
+            temp.pointPerYr = parseFloat(pointPerYr);
+            temp.pointPerMonth = pointPerMonth;
+            temp.pointPerWeek = pointPerWeek;
+            temp.pointPerDay = pointPerDay;
+            temp.pointPerHr = pointPerHr;
+            temp.seedTimeInDays = parseFloat(seedTimeInDays);
+            temp.AvgBpPerYearPerGiB = AvgBpPerYearPerGiB;
+            temp.AvgBpPerYearPerGiBNum = AvgBpPerYearPerGiBNum;
+            temp.color = color;
+            temp.nameRaw = nameRaw;
+            temp.gp = gp;
+            temp.seeds = seeds;
+            temp.sizeRaw = sizeRaw;
+            temp.size = size;
+            temp.ul = ul;
+            temp.time = time;
+            temp.BPhr = BPhr;
+            temp.BPday = BPday;
+            temp.BPweek = BPweek;
+            temp.BPmonth = BPmonth;
+            temp.BPyear = BPyear;
+            temp.ratio = ratio;
+            temp.name = name;
+            temp.href = href;
 
             data.push(temp);
         }
@@ -407,10 +487,6 @@ var magic = (function(){
 	// https://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript
 	magic.prototype.numbers = function(x) {
 		var numbers = x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-		console.log('numbers: ',numbers);
-		if(numbers == 'NaN'){
-			console.log('x: ', x);
-		}
 		return numbers;
 	}
 
