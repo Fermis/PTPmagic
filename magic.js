@@ -83,6 +83,25 @@ var magic = (function(){
 						        return ((a < b) ? 1 : ((a > b) ? -1 : 0));
 						    }
 						});
+
+						// add in some custom styling for datatables to be pretty
+						$([
+							'<style type="text/css">',
+								'.even {',
+									'background-color: #4d4d4d !important;',
+								'}',
+								'.dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing, .dataTables_wrapper .dataTables_paginate {',
+								    'color: #ffffff !important;',
+								'}',
+								'.dataTables_wrapper .dataTables_paginate .paginate_button.disabled, .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover, .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:active {',
+								    'color: #fff !important;',
+								'}',
+								'.dataTables_wrapper .dataTables_paginate .paginate_button {',
+								    'color: #8a8a8a !important;',
+								'}',
+							'</style>'
+						].join('')).appendTo('head');
+
 						that.init();
 					});				
 				});
@@ -92,22 +111,7 @@ var magic = (function(){
 
 	magic.prototype.init = function(){
 		var that = this;
-		$([
-			'<style type="text/css">',
-				'.even {',
-					'background-color: #4d4d4d !important;',
-				'}',
-				'.dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing, .dataTables_wrapper .dataTables_paginate {',
-				    'color: #ffffff !important;',
-				'}',
-				'.dataTables_wrapper .dataTables_paginate .paginate_button.disabled, .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover, .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:active {',
-				    'color: #fff !important;',
-				'}',
-				'.dataTables_wrapper .dataTables_paginate .paginate_button {',
-				    'color: #8a8a8a !important;',
-				'}',
-			'</style>'
-		].join('')).appendTo('head');
+		
 		return new Promise(function(resolve, reject){
 			// css loader from http://projects.lukehaas.me/css-loaders/
 			var cssText = ".loader {font-size: 90px; text-indent: -9999em; overflow: hidden; width: 1em; height: 1em; border-radius: 50%; margin: 0.8em auto; position: relative; -webkit-transform: translateZ(0); -ms-transform: translateZ(0); transform: translateZ(0); -webkit-animation: load6 1.7s infinite ease; animation: load6 1.7s infinite ease; } @-webkit-keyframes load6 {0% {-webkit-transform: rotate(0deg); transform: rotate(0deg); box-shadow: 0 -0.83em 0 -0.4em #ffffff, 0 -0.83em 0 -0.42em #ffffff, 0 -0.83em 0 -0.44em #ffffff, 0 -0.83em 0 -0.46em #ffffff, 0 -0.83em 0 -0.477em #ffffff; } 5%, 95% {box-shadow: 0 -0.83em 0 -0.4em #ffffff, 0 -0.83em 0 -0.42em #ffffff, 0 -0.83em 0 -0.44em #ffffff, 0 -0.83em 0 -0.46em #ffffff, 0 -0.83em 0 -0.477em #ffffff; } 10%, 59% {box-shadow: 0 -0.83em 0 -0.4em #ffffff, -0.087em -0.825em 0 -0.42em #ffffff, -0.173em -0.812em 0 -0.44em #ffffff, -0.256em -0.789em 0 -0.46em #ffffff, -0.297em -0.775em 0 -0.477em #ffffff; } 20% {box-shadow: 0 -0.83em 0 -0.4em #ffffff, -0.338em -0.758em 0 -0.42em #ffffff, -0.555em -0.617em 0 -0.44em #ffffff, -0.671em -0.488em 0 -0.46em #ffffff, -0.749em -0.34em 0 -0.477em #ffffff; } 38% {box-shadow: 0 -0.83em 0 -0.4em #ffffff, -0.377em -0.74em 0 -0.42em #ffffff, -0.645em -0.522em 0 -0.44em #ffffff, -0.775em -0.297em 0 -0.46em #ffffff, -0.82em -0.09em 0 -0.477em #ffffff; } 100% {-webkit-transform: rotate(360deg); transform: rotate(360deg); box-shadow: 0 -0.83em 0 -0.4em #ffffff, 0 -0.83em 0 -0.42em #ffffff, 0 -0.83em 0 -0.44em #ffffff, 0 -0.83em 0 -0.46em #ffffff, 0 -0.83em 0 -0.477em #ffffff; } } @keyframes load6 {0% {-webkit-transform: rotate(0deg); transform: rotate(0deg); box-shadow: 0 -0.83em 0 -0.4em #ffffff, 0 -0.83em 0 -0.42em #ffffff, 0 -0.83em 0 -0.44em #ffffff, 0 -0.83em 0 -0.46em #ffffff, 0 -0.83em 0 -0.477em #ffffff; } 5%, 95% {box-shadow: 0 -0.83em 0 -0.4em #ffffff, 0 -0.83em 0 -0.42em #ffffff, 0 -0.83em 0 -0.44em #ffffff, 0 -0.83em 0 -0.46em #ffffff, 0 -0.83em 0 -0.477em #ffffff; } 10%, 59% {box-shadow: 0 -0.83em 0 -0.4em #ffffff, -0.087em -0.825em 0 -0.42em #ffffff, -0.173em -0.812em 0 -0.44em #ffffff, -0.256em -0.789em 0 -0.46em #ffffff, -0.297em -0.775em 0 -0.477em #ffffff; } 20% {box-shadow: 0 -0.83em 0 -0.4em #ffffff, -0.338em -0.758em 0 -0.42em #ffffff, -0.555em -0.617em 0 -0.44em #ffffff, -0.671em -0.488em 0 -0.46em #ffffff, -0.749em -0.34em 0 -0.477em #ffffff; } 38% {box-shadow: 0 -0.83em 0 -0.4em #ffffff, -0.377em -0.74em 0 -0.42em #ffffff, -0.645em -0.522em 0 -0.44em #ffffff, -0.775em -0.297em 0 -0.46em #ffffff, -0.82em -0.09em 0 -0.477em #ffffff; } 100% {-webkit-transform: rotate(360deg); transform: rotate(360deg); box-shadow: 0 -0.83em 0 -0.4em #ffffff, 0 -0.83em 0 -0.42em #ffffff, 0 -0.83em 0 -0.44em #ffffff, 0 -0.83em 0 -0.46em #ffffff, 0 -0.83em 0 -0.477em #ffffff; } }";
@@ -137,25 +141,38 @@ var magic = (function(){
 
 			var order = that.settings.order;
 			
-			var lastPage = that.getLastPage();
+			var lastPage = that.getLastPage(document);
+
 			var pages = [];
 			for(var i = 1; i < lastPage+1; i++){
 				var baseUrl = window.location.origin + window.location.pathname;
         		var url = baseUrl + "?page=" + i + "&order_by=bp&order_way=asc";
-				pages.push(that.loadPage(url));
+				pages.push(that.loadPage(url, function(e){return that.buildRow(e)}));
 			}
 			
 			return Promise.all(pages).then(function(p){
 				var data = [];
 				for(var i in p){
-					for(var j in p[i]){
-						data.push(p[i][j]);
-					}
+					data = that.mergeObjects(data, p[i]);
 				}
+				// add new html table to the form
 				that.addNewTable(data);
 
-				
-				$('#'+that.settings.bpTableId).DataTable({
+				// get ratios
+				that.loadPage(window.location.origin + '/snatchlist.php?full=1', function(e){
+					var lastPage = that.getLastPage(e);
+					console.log('lastPage: ',lastPage);
+					return e;
+				}).then(function(e){
+					
+				});
+				// ;
+
+				// add in settings box
+
+
+				// setup options for datatables
+				var dataTableParams = {
 					columnDefs: [
 						{ type: 'size-string', targets: 2 },
 						// { type: 'days-string', targets: 4 }
@@ -165,17 +182,20 @@ var magic = (function(){
 						["All", 25, 50, 100, 200]
 					],
 					aaSorting: [[10, 'desc']]
-				});
+				};
+
+				$('#'+that.settings.bpTableId).DataTable(dataTableParams);
 				
 				resolve();
 			});
 		}).catch(function(err){
 			// need to add in more error handling
-			console.log(err);
+			console.log(err.stack);
 		});
 	}
 
-	magic.prototype.loadPage = function(url){
+	// call back so I can use the same page loading code for both getting ratios and getting BP data
+	magic.prototype.loadPage = function(url, callback){
 		var that = this;
 		return new Promise(function(resolve, reject){
 			var xmlhttp = new XMLHttpRequest();
@@ -187,10 +207,13 @@ var magic = (function(){
 					if (this.status == 200){
 						// xhr.status == 200, so the response is good
 						var page = this.responseText;
-						// toDomEl(response, callback);
 						var e = document.createElement('div');
 						e.innerHTML = page;
-						resolve(that.buildRow(e));
+						if(typeof(callback) == 'function'){
+							resolve(callback(e))
+						}else{
+							resolve(e);
+						}
 					}else{
 						reject(url+' not loaded properly');
 					}
@@ -198,11 +221,23 @@ var magic = (function(){
 			};
 			xmlhttp.send();
 		});
-	}
+	};
 
-	magic.prototype.getLastPage = function(){
+	magic.prototype.addSettings = function(){
+		var settingsSection = document.getElementsByClassName('panel__body')[0];
+		
+		// lets remove projected seeders seeing as it currently doesn't work
+		settingsSection.children[0].remove();
+
+		// All the checkboxes, in probably a borderless table
+	};
+
+	magic.prototype.getLastPage = function(page){
 		var that = this;
-		var testEl = document.getElementsByClassName('pagination')[0];
+		if(typeof(page) === 'undefined'){
+			page = document;
+		}
+		var testEl = page.getElementsByClassName('pagination')[0];
 		var last = 0;
 		if (typeof testEl !== "undefined"){
 			var linkBar = testEl.children;
@@ -220,8 +255,8 @@ var magic = (function(){
 			last = 1;
 		}
 		return last;
-	}	
-
+	};	
+	
 	magic.prototype.addNewTable = function(content){
 		var that = this;
 
@@ -320,13 +355,12 @@ var magic = (function(){
 		// insert the new table with all the torernts
 		old_body.parentNode.replaceChild(new_body, old_body);
 		return true;
-	}
+	};
 
 	magic.prototype.buildRow = function(page){
 		var that = this;
 		var data = [];
 		var el = page.getElementsByClassName('table')[1].children[1].children;
-        
         for (var i = 0; i < el.length; i++){
             var name = el[i].children[0].children[0].innerText;
             var href = el[i].children[0].children[0].getAttribute("href");
@@ -445,22 +479,26 @@ var magic = (function(){
             temp.ratio = ratio;
             temp.name = name;
             temp.href = href;
+            temp.torrentid = that.gup('torrentid', href);
 
-            data.push(temp);
+
+            data[temp.torrentid] = temp;
         }
         return data;
-	}
+	};
 
 	magic.prototype.mergeObjects = function(base, newObj){
 		var that = this;
 		for(var attr in newObj){
-			if(typeof(newObj[attr]) == 'object' && typeof(base[attr] !== 'undefined')){
-				base[attr] = that.mergeObjects(base[attr], newObj[attr]);	
+			if(typeof(base[attr]) !== 'undefined'){
+				if(typeof(newObj[attr]) == 'object'){
+					base[attr] = that.mergeObjects(base[attr], newObj[attr]);	
+				}
 			}
-			base[attr] = newObj[attr]; 
+			base[attr] = newObj[attr];
 		}
 		return base;
-	}
+	};
 
 	// written by coj
 	magic.prototype.colourize = function(rate) {
@@ -471,13 +509,13 @@ var magic = (function(){
 		var sat = Math.min(100, 50.0 + (4.0/3.0) * rate);
 		var light = Math.min(50, 40.0 + 3.0 * rate);
 		return 'hsl('+hue+', '+sat+'%, '+light+'%)';
-	}
+	};
 
 	// https://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript
 	magic.prototype.numbers = function(x) {
 		var numbers = x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 		return numbers;
-	}
+	};
 
 	magic.prototype.gup = function(name, url){
 		if(!url){ 
@@ -488,7 +526,7 @@ var magic = (function(){
 		var regex = new RegExp( regexS );
 		var results = regex.exec( url );
 		return results == null ? null : results[1];
-	}
+	};
 
 	magic.prototype.importScript = (function (oHead) {
 		var that = this;
