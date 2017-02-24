@@ -17,7 +17,7 @@ TODO<br>
 -learn how to better format this readme.
 <br><br>
 Known ~~bugs~~ features:<br>
-- Days seeding isn't properly sorted <br>
+- ~~Days seeding isn't properly sorted~~ <br>
 <br>
 
 Description:<br>

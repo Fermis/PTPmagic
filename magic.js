@@ -2,13 +2,11 @@
 // @name                PTP Bonus Point Tool
 // @namespace           passthepopcorn.me
 // @description         ***Magic***
-// @include             https://*.passthepopcorn.me/bprate.php*
-// @include             https://passthepopcorn.me/bprate.php*
-// @include             http://*.passthepopcorn.me/bprate.php*
-// @include             http://passthepopcorn.me/bprate.php*
+// @include             http*://*.passthepopcorn.me/bprate.php*
+// @include             http*://passthepopcorn.me/bprate.php*
 // @grant               GM_xmlhttpRequest
-// @downloadURL         https://raw.githubusercontent.com/Fermis/PTPmagic/development/magic.js
-// @version             2.0.0
+// @downloadURL         https://raw.githubusercontent.com/Fermis/PTPmagic/master/magic.js
+// @version             2.0.1
 // @author              Fermis
 // ==/UserScript==
 
@@ -16,7 +14,13 @@
 // Change log (mm/dd/yyyy)
 // 
 //	02/23/2017
-//  rewrite to work via promises instead of callbacks, code clean up
+//	rewrite to work via promises instead of callbacks, code clean up
+//
+//	02/24/2017
+//	change datatable to show all rows by default
+//	made default sort the (BP/Yr) / Size
+//	Changed seed time to seed time in days to fix sorting issue and make data more useful
+//
 //
 // parts of this script were taken from coj's script (http://pastebin.com/xYFnCVJa)
 
@@ -78,20 +82,6 @@ var magic = (function(){
 						    "size-string-desc": function(a,b){
 						        return ((a < b) ? 1 : ((a > b) ? -1 : 0));
 						    }
-						});
-						jQuery.extend(jQuery.fn.dataTableExt.oSort, {
-							"days-string-pre": function ( a ) {
-								var match = a.match(/data-days="(.*?)"/)[1].toLowerCase();
-								return match;
-							},
-
-							"days-string-asc": function( a, b ) {
-								return ((a < b) ? -1 : ((a > b) ? 1 : 0));
-							},
-
-							"days-string-desc": function(a,b) {
-								return ((a < b) ? 1 : ((a > b) ? -1 : 0));
-							}
 						});
 						that.init();
 					});				
@@ -168,8 +158,13 @@ var magic = (function(){
 				$('#'+that.settings.bpTableId).DataTable({
 					columnDefs: [
 						{ type: 'size-string', targets: 2 },
-						{ type: 'days-string', targets: 4 }
-					]
+						// { type: 'days-string', targets: 4 }
+					],
+					aLengthMenu: [
+						[-1, 25, 50, 100, 200],
+						["All", 25, 50, 100, 200]
+					],
+					aaSorting: [[10, 'desc']]
 				});
 				
 				resolve();
@@ -253,6 +248,11 @@ var magic = (function(){
 		th.appendChild(a);
 		head.appendChild(th);
 
+		// change the Seed time title and alt
+		var seedTime = document.querySelector('[title="Seed time"]');
+		seedTime.alt = "Seed time in days";
+		seedTime.title = "Seed time in days";
+
 		// create the new table
 		var table = document.getElementsByClassName('table')[1];
 		table.setAttribute('id',that.settings.bpTableId)
@@ -284,10 +284,7 @@ var magic = (function(){
 			tr.appendChild(td);
 
 			var td = document.createElement('td');
-			var span = document.createElement('span');
-			span.setAttribute('data-days', content[i].seedTimeInDays);
-			span.appendChild(document.createTextNode(content[i].time));
-			td.appendChild(span);
+			td.appendChild(document.createTextNode(content[i].seedTimeInDays));
 			tr.appendChild(td);
 
 			var td = document.createElement('td');
@@ -414,14 +411,6 @@ var magic = (function(){
 
             // Seedtime in days
             // bp/hr = size * ( 0.25 + ( 0.6 * ln(1+seedtime) / (seeds^0.6) ) )
-            // accurateBpPerHour = (size*goldenMultiplier) * ( a + ( b * ln(1+seedtime) / (Q^0.6) ) )
-            // accurateBpPerHour / (size*goldenMultiplier) = a + ( b * ln(1+seedtime) / (Q^0.6) )
-            // (accurateBpPerHour / (size*goldenMultiplier)) - a = b * ln(1+seedtime) / (Q^0.6)
-            // (((accurateBpPerHour / (size*goldenMultiplier)) - a) / b) * (Q^0.6) =ln(1+seedtime)
-            // Math.exp(((((accurateBpPerHour / (size*goldenMultiplier)) - a) / b) * (Q^0.6)) =1+seedtime
-           	// Math.exp(((((accurateBpPerHour / (size*goldenMultiplier)) - a) / b) * (Q^c)) -1 = seedtime
-            
-            // var t = Math.exp( (accurateBpPerHour/(size*goldenMultiplier) - that.settings.BPHr.a) / Q ) - 1.0;
             var t = Math.exp(((((accurateBpPerHour / (size*goldenMultiplier)) - that.settings.BPHr.a) / that.settings.BPHr.b) * (Math.pow(rawSeeds,that.settings.BPHr.c)))) - 1;
             var seedTimeInDays = that.numbers((t).toFixed(1));
 
